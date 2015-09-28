@@ -2,7 +2,7 @@
  * @jsx React.DOM
  */
 
-var React = require('react');
+// var React = require('react');
 var TypeaheadOption = require('./option');
 var classNames = require('classnames');
 
