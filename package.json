@@ -39,6 +39,15 @@
   "peerDependencies": {
     "react": ">= 0.13.0"
   },
+  "browserify": {
+    "transform": [
+      ["babelify", { "optional": [ "es7.objectRestSpread"] }],
+      "browserify-shim"
+    ]
+  },
+  "browserify-shim": {
+    "react": "global:React"
+  },
   "main": "lib/react-typeahead.js",
   "devDependencies": {
     "browserify": "^8.0.2",
