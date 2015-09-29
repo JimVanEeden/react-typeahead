@@ -7,6 +7,7 @@ var Token = require('./token');
 var KeyEvent = require('../keyevent');
 var Typeahead = require('../typeahead');
 var classNames = require('classnames');
+var validateEmail = require('rfc822-validate');
 
 function _arraysAreDifferent(array1, array2) {
   if (array1.length != array2.length){
@@ -24,22 +25,25 @@ function _arraysAreDifferent(array1, array2) {
  * the text entry widget, prepends a renderable "token", that may be deleted
  * by pressing backspace on the beginning of the line with the keyboard.
  */
-var TypeaheadTokenizer = React.createClass({
+var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
   propTypes: {
     name: React.PropTypes.string,
     options: React.PropTypes.array,
     customClasses: React.PropTypes.object,
     allowCustomValues: React.PropTypes.number,
+    maxTokens: React.PropTypes.number,
     defaultSelected: React.PropTypes.array,
     defaultValue: React.PropTypes.string,
     placeholder: React.PropTypes.string,
+    initialTokens: React.PropTypes.array,
     inputProps: React.PropTypes.object,
+    inputType: React.PropTypes.string,
     onTokenRemove: React.PropTypes.func,
     onKeyDown: React.PropTypes.func,
-    onKeyUp: React.PropTypes.func,
     onTokenAdd: React.PropTypes.func,
     onFocus: React.PropTypes.func,
     onBlur: React.PropTypes.func,
+    onChange: React.PropTypes.func,
     filterOption: React.PropTypes.oneOfType([
       React.PropTypes.string,
       React.PropTypes.func
@@ -66,16 +70,19 @@ var TypeaheadTokenizer = React.createClass({
       defaultSelected: [],
       customClasses: {},
       allowCustomValues: 0,
+      maxTokens: -1,
       defaultValue: "",
+      inputType: "text",
       placeholder: "",
+      initialTokens: [],
       inputProps: {},
       defaultClassNames: true,
       filterOption: null,
       displayOption: function(token){return token },
       onKeyDown: function(event) {},
-      onKeyUp: function(event) {},
       onFocus: function(event) {},
       onBlur: function(event) {},
+      onChange: function(event) {},
       onTokenAdd: function() {},
       onTokenRemove: function() {}
     };
@@ -102,15 +109,17 @@ var TypeaheadTokenizer = React.createClass({
     var tokenClasses = {};
     tokenClasses[this.props.customClasses.token] = !!this.props.customClasses.token;
     var classList = classNames(tokenClasses);
-    var result = this.state.selected.map(function(selected) {
+    var result = this.state.selected.map(function(selected, index) {
       var displayString = this.props.displayOption(selected);
       return (
-        <Token key={ displayString } className={classList}
-          onRemove={ this._removeTokenForValue }
-          object={selected}
-          name={ this.props.name }>
-          { displayString }
-        </Token>
+        React.createElement(Token, {key:  displayString, className: classList, 
+          onRemove:  this._removeTokenForValue, 
+          object: selected,
+          parent: this,
+          ref: 'token' + index,
+          name:  this.props.name}, 
+           displayString 
+        )
       );
     }, this);
     return result;
@@ -129,6 +138,15 @@ var TypeaheadTokenizer = React.createClass({
     this.props.onKeyDown(event);
   },
 
+  _onPaste: function(event) {
+    event.preventDefault();
+
+    var emails = event.clipboardData.getData('Text').split(/[\s,;]+/);
+
+    
+    emails.map(this._addTokenForValue);
+  },
+
   _handleBackspace: function(event){
     // No tokens
     if (!this.state.selected.length) {
@@ -138,10 +156,9 @@ var TypeaheadTokenizer = React.createClass({
     // Remove token ONLY when bksp pressed at beginning of line
     // without a selection
     var entry = this.refs.typeahead.refs.entry.getDOMNode();
-    if (entry.selectionStart == entry.selectionEnd &&
-        entry.selectionStart == 0) {
-      this._removeTokenForValue(
-        this.state.selected[this.state.selected.length - 1]);
+    if (!entry.value || entry.value.length <= 0) {
+      var index = this.state.selected.length - 1;
+      React.findDOMNode(this.refs['token' + index]).focus();
       event.preventDefault();
     }
   },
@@ -159,6 +176,13 @@ var TypeaheadTokenizer = React.createClass({
   },
 
   _addTokenForValue: function(value) {
+    if (this.props.inputType === 'email' && !validateEmail(value)) {
+      return;
+    }
+    if (this.props.maxTokens >= 0 
+      && this.state.selected.length >= this.props.maxTokens) {
+      return;
+    }
     if (this.state.selected.indexOf(value) != -1) {
       return;
     }
@@ -177,26 +201,28 @@ var TypeaheadTokenizer = React.createClass({
     var tokenizerClassList = classNames(tokenizerClasses)
 
     return (
-      <div className={tokenizerClassList}>
-        { this._renderTokens() }
-        <Typeahead ref="typeahead"
-          className={classList}
-          placeholder={this.props.placeholder}
-          inputProps={this.props.inputProps}
-          allowCustomValues={this.props.allowCustomValues}
-          customClasses={this.props.customClasses}
-          options={this._getOptionsForTypeahead()}
-          defaultValue={this.props.defaultValue}
-          maxVisible={this.props.maxVisible}
-          onOptionSelected={this._addTokenForValue}
-          onKeyDown={this._onKeyDown}
-          onKeyUp={this.props.onKeyUp}
-          onFocus={this.props.onFocus}
-          onBlur={this.props.onBlur}
-          displayOption={this.props.displayOption}
-          defaultClassNames={this.props.defaultClassNames}
-          filterOption={this.props.filterOption} />
-      </div>
+      React.createElement("div", {className: tokenizerClassList}, 
+         this._renderTokens(), 
+        React.createElement(Typeahead, {ref: "typeahead", 
+          className: classList, 
+          placeholder: this.props.placeholder, 
+          inputProps: this.props.inputProps, 
+          allowCustomValues: this.props.allowCustomValues, 
+          customClasses: this.props.customClasses, 
+          options: this._getOptionsForTypeahead(), 
+          defaultValue: this.props.defaultValue,
+          inputType: this.props.inputType,
+          maxVisible: this.props.maxVisible, 
+          onOptionSelected: this._addTokenForValue, 
+          onKeyDown: this._onKeyDown, 
+          onFocus: this.props.onFocus, 
+          onBlur: this.props.onBlur,
+          onChange: this.props.onChange,
+          onPaste: this._onPaste,
+          displayOption: this.props.displayOption, 
+          defaultClassNames: this.props.defaultClassNames, 
+          filterOption: this.props.filterOption})
+      )
     );
   }
 });

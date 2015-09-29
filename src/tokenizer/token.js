@@ -9,11 +9,12 @@ var classNames = require('classnames');
  * Encapsulates the rendering of an option that has been "selected" in a
  * TypeaheadTokenizer
  */
-var Token = React.createClass({
+var Token = React.createClass({displayName: "Token",
   propTypes: {
     className: React.PropTypes.string,
     name: React.PropTypes.string,
     children: React.PropTypes.string,
+    parent: React.PropTypes.object,
     object: React.PropTypes.oneOfType([
       React.PropTypes.string,
       React.PropTypes.object,
@@ -28,11 +29,11 @@ var Token = React.createClass({
     ]);
 
     return (
-      <div className={className}>
-        {this._renderHiddenInput()}
-        {this.props.children}
-        {this._renderCloseButton()}
-      </div>
+      React.createElement("div", {className: className, tabIndex: 0, onKeyDown: this._removeHandler}, 
+        this._renderHiddenInput(), 
+        this.props.children, 
+        this._renderCloseButton()
+      )
     );
   },
 
@@ -43,12 +44,23 @@ var Token = React.createClass({
     }
 
     return (
-      <input
-        type="hidden"
-        name={ this.props.name + '[]' }
-        value={ this.props.object }
-      />
+      React.createElement("input", {
+        type: "hidden", 
+        name:  this.props.name + '[]', 
+        value:  this.props.object}
+      )
     );
+  },
+
+  _removeHandler: function (event) {
+    event.preventDefault();
+
+    if (event.type === 'click' 
+      || event.keyCode === 8 
+      || event.keyCode === 46) { // only on delete or backspace or click
+      this.props.onRemove(this.props.object);
+      this.props.parent.focus();
+    }
   },
 
   _renderCloseButton: function() {
@@ -56,10 +68,11 @@ var Token = React.createClass({
       return "";
     }
     return (
-      <a className="typeahead-token-close" href="#" onClick={function(event) {
-          this.props.onRemove(this.props.object);
-          event.preventDefault();
-        }.bind(this)}>&#x00d7;</a>
+      React.createElement("a", {className: "typeahead-token-close", 
+        href: "#", 
+        tabIndex: -1, 
+        onClick: this._removeHandler
+      }, "×")
     );
   }
 });
