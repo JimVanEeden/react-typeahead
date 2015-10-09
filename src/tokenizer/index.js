@@ -27,6 +27,10 @@ var singleTokenUpdates = function () {
 
   input.css('padding-left', (token.width() + 14) + 'px' );
   token.focus();
+
+  if (!token.length) {
+    input.focus();
+  }
 };    
 
 /**
