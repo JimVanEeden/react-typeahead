@@ -152,7 +152,9 @@ var Typeahead = React.createClass({displayName: "Typeahead",
 
     return (
       React.createElement(this.props.customListComponent, {
-        ref: "sel", options: this.state.visible, 
+        ref: "sel", 
+        options: this.state.visible, 
+        entryValue: this.state.entryValue,
         onOptionSelected: this._onOptionSelected, 
         customValue: this._getCustomValue(), 
         customClasses: this.props.customClasses, 

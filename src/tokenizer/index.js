@@ -3,6 +3,7 @@
  */
 
 // var React = require('react');
+var $ = require('jquery');
 var Token = require('./token');
 var KeyEvent = require('../keyevent');
 var Typeahead = require('../typeahead');
@@ -20,12 +21,22 @@ function _arraysAreDifferent(array1, array2) {
   }
 }
 
+var singleTokenUpdates = function () {
+  var token = $('.token-singleValue');
+  var input = $('.typeahead input');
+
+  input.css('padding-left', (token.width() + 14) + 'px' );
+  token.focus();
+};    
+
 /**
  * A typeahead that, when an option is selected, instead of simply filling
  * the text entry widget, prepends a renderable "token", that may be deleted
  * by pressing backspace on the beginning of the line with the keyboard.
  */
 var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
+  componentDidUpdate: singleTokenUpdates,
+  componentDidMount: singleTokenUpdates,
   propTypes: {
     name: React.PropTypes.string,
     options: React.PropTypes.array,

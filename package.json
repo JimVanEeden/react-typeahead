@@ -37,7 +37,8 @@
     "fuzzy": "^0.1.0"
   },
   "peerDependencies": {
-    "react": ">= 0.13.0"
+    "react": ">= 0.13.0",
+    "jquery": "^2.1.4"
   },
   "browserify": {
     "transform": [
