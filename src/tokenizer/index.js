@@ -21,16 +21,13 @@ function _arraysAreDifferent(array1, array2) {
   }
 }
 
-var singleTokenUpdates = function () {
-  var token = $('.token-singleValue');
+var shiftInput = function () {
+  var tokenWrapper = $('.typeahead-tokenWrapper.tokens-inside');
   var input = $('.typeahead input');
+  var selector = $('.typeahead-selector');
+  var shiftRight = (tokenWrapper.width() + parseInt(tokenWrapper.css("margin-left"))) + 'px';
 
-  input.css('padding-left', (token.width() + 14) + 'px' );
-  token.focus();
-
-  if (!token.length) {
-    input.focus();
-  }
+  input.css('padding-left', shiftRight);
 };    
 
 /**
@@ -39,8 +36,8 @@ var singleTokenUpdates = function () {
  * by pressing backspace on the beginning of the line with the keyboard.
  */
 var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
-  componentDidUpdate: singleTokenUpdates,
-  componentDidMount: singleTokenUpdates,
+  componentDidUpdate: shiftInput,
+  componentDidMount: shiftInput,
   propTypes: {
     name: React.PropTypes.string,
     options: React.PropTypes.array,
@@ -124,7 +121,7 @@ var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
     var tokenClasses = {};
     tokenClasses[this.props.customClasses.token] = !!this.props.customClasses.token;
     var classList = classNames(tokenClasses);
-    var result = this.state.selected.map(function(selected, index) {
+    var tokens = this.state.selected.map(function(selected, index) {
       var displayString = this.props.displayOption(selected);
       return (
         React.createElement(Token, {key:  displayString, className: classList, 
@@ -137,7 +134,14 @@ var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
         )
       );
     }, this);
-    return result;
+
+    var wrapperClass = 'typeahead-tokenWrapper';
+    if (this.props.customClasses.tokenWrapper) {
+      wrapperClass += ' ' + this.props.customClasses.tokenWrapper;
+    }
+    return React.createElement("div", {className: wrapperClass}, 
+      tokens
+    );
   },
 
   _getOptionsForTypeahead: function() {

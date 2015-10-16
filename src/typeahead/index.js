@@ -3,6 +3,7 @@
  */
 
 // var React = require('react');
+var $ = require('jquery');
 var TypeaheadSelector = require('./selector');
 var KeyEvent = require('../keyevent');
 var fuzzy = require('fuzzy');
@@ -14,6 +15,16 @@ var _generateAccessor = function(field) {
   return function(object) { return object[field]; };
 };
 
+var shiftSelector = function () {
+  var input = $('.typeahead input');
+  var selector = $('.typeahead-selector');
+  var tokenWrapper = $('.typeahead-tokenWrapper');
+
+  var shiftRight = parseInt(input.css('padding-left')) - parseInt(tokenWrapper.css('margin-left'));
+
+  selector.css('margin-left', shiftRight + 'px');
+};
+
 /**
  * A "typeahead", an auto-completing text input
  *
@@ -21,6 +32,8 @@ var _generateAccessor = function(field) {
  * keyboard or mouse to select.  Requires CSS for MASSIVE DAMAGE.
  */
 var Typeahead = React.createClass({displayName: "Typeahead",
+  componentDidUpdate: shiftSelector,
+  componentDidMount: shiftSelector,
   propTypes: {
     name: React.PropTypes.string,
     customClasses: React.PropTypes.object,
