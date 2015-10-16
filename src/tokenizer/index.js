@@ -25,9 +25,11 @@ var shiftInput = function () {
   var tokenWrapper = $('.typeahead-tokenWrapper.tokens-inside');
   var input = $('.typeahead input');
   var selector = $('.typeahead-selector');
-  var shiftRight = (tokenWrapper.width() + parseInt(tokenWrapper.css("margin-left"))) + 'px';
+  var shiftRight = (tokenWrapper.width() + parseInt(tokenWrapper.css("margin-left")) - 4) + 'px';
 
-  input.css('padding-left', shiftRight);
+  if (tokenWrapper.length && tokenWrapper.width() > 0) {
+    input.css('padding-left', shiftRight);
+  }
 };    
 
 /**
