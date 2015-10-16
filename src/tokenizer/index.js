@@ -26,8 +26,11 @@ var shiftInput = function () {
   var input = $('.typeahead input');
   var selector = $('.typeahead-selector');
   var shiftRight = (tokenWrapper.width() + parseInt(tokenWrapper.css("margin-left")) - 4) + 'px';
+  if (tokenWrapper.width() <= 0) {
+    shiftRight = '14px';
+  }
 
-  if (tokenWrapper.length && tokenWrapper.width() > 0) {
+  if (tokenWrapper.length) {
     input.css('padding-left', shiftRight);
   }
 };    
