@@ -68,7 +68,8 @@ var Typeahead = React.createClass({displayName: "Typeahead",
     customListComponent: React.PropTypes.oneOfType([
       React.PropTypes.element,
       React.PropTypes.func
-    ])
+    ]),
+    semiTokens: React.PropTypes.array
   },
 
   getDefaultProps: function() {
@@ -82,6 +83,7 @@ var Typeahead = React.createClass({displayName: "Typeahead",
       placeholder: "",
       textarea: false,
       inputProps: {},
+      semiTokens: [],
       onOptionSelected: function(option) {},
       onChange: function(event) {},
       onKeyDown: function(event) {},
@@ -136,10 +138,12 @@ var Typeahead = React.createClass({displayName: "Typeahead",
     React.findDOMNode(this.refs.entry).focus()
   },
 
-  _hasCustomValue: function() {
-    if (this.props.allowCustomValues > 0 &&
+  _hasCustomValue: function() { 
+
+    if ((this.props.allowCustomValues > 0 &&
       this.state.entryValue.length >= this.props.allowCustomValues &&
-      this.state.visible.indexOf(this.state.entryValue) < 0) {
+      this.state.visible.indexOf(this.state.entryValue) < 0) ||
+      this.props.semiTokens.some((st) => this.state.entryValue.startsWith(st))) {
       return true;
     }
     return false;

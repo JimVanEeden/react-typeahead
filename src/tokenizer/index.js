@@ -70,7 +70,8 @@ var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
       React.PropTypes.func
     ]),
     maxVisible: React.PropTypes.number,
-    defaultClassNames: React.PropTypes.bool
+    defaultClassNames: React.PropTypes.bool,
+    semiTokens: React.PropTypes.array
   },
 
   getInitialState: function() {
@@ -95,6 +96,7 @@ var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
       inputProps: {},
       defaultClassNames: true,
       filterOption: null,
+      semiTokens: [],
       displayOption: function(token){return token },
       onKeyDown: function(event) {},
       onFocus: function(event) {},
@@ -165,10 +167,9 @@ var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
   _onPaste: function(event) {
     event.preventDefault();
 
-    var emails = event.clipboardData.getData('Text').split(/[\s,;]+/);
+    var values = event.clipboardData.getData('Text').split(/[\s,;]+/);
 
-    
-    emails.map(this._addTokenForValue);
+    values.map(this._addTokenForValue);
   },
 
   _handleBackspace: function(event){
@@ -210,6 +211,9 @@ var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
     if (this.state.selected.indexOf(value) != -1) {
       return;
     }
+    if (this.props.semiTokens.indexOf(value) >= 0) {
+      return;
+    }
     this.state.selected.push(value);
     this.setState({selected: this.state.selected});
     this.refs.typeahead.setEntryText("");
@@ -245,7 +249,8 @@ var TypeaheadTokenizer = React.createClass({displayName: "TypeaheadTokenizer",
           onPaste: this._onPaste,
           displayOption: this.props.displayOption, 
           defaultClassNames: this.props.defaultClassNames, 
-          filterOption: this.props.filterOption})
+          filterOption: this.props.filterOption,
+          semiTokens: this.props.semiTokens})
       )
     );
   }
