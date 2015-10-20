@@ -53,8 +53,6 @@ var Token = React.createClass({displayName: "Token",
   },
 
   _removeHandler: function (event) {
-    event.preventDefault();
-
     if (event.type === 'click' 
       || event.keyCode === 8 
       || event.keyCode === 46) { // only on delete or backspace or click
